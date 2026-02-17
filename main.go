@@ -9,13 +9,13 @@ func main() {
 	mux := http.NewServeMux()
 	var cfg apiConfig
 	applicationPath := "/app/"
-	basicHandler := http.StripPrefix(applicationPath, http.FileServer(http.Dir(".")))
-
+	appHandler := http.StripPrefix(applicationPath, http.FileServer(http.Dir(".")))
 	//register request handlers
-	mux.Handle(applicationPath, cfg.RegisterSiteHit(basicHandler))
-	mux.HandleFunc("GET /api/metrics", cfg.Metrics)
+	mux.Handle(applicationPath, cfg.RegisterSiteHit(appHandler))
+	mux.HandleFunc("POST /api/validate_chirp", ValidateChirp)
+	mux.HandleFunc("GET /admin/metrics", cfg.Metrics)
 	mux.HandleFunc("GET /api/healthz", cfg.Health)
-	mux.HandleFunc("POST /api/reset", cfg.Reset)
+	mux.HandleFunc("POST /admin/reset", cfg.Reset)
 
 	server := http.Server{
 		Handler: mux,

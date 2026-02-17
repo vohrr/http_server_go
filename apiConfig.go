@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync/atomic"
@@ -12,14 +11,13 @@ type apiConfig struct {
 }
 
 func (cfg *apiConfig) Metrics(w http.ResponseWriter, r *http.Request) {
-	data := fmt.Sprintf("Hits: %d", cfg.fileServerHits.Load())
-	body, err := json.Marshal(&data)
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.Write(body)
+	w.Header().Add("Content-Type", "text/html")
+	fmt.Fprintf(w, `<html>
+		<body>
+			<h1>Welcome, Chirpy Admin</h1>
+			<p>Chirpy has been visited %d times!</p>
+		</body>
+	</html>`, cfg.fileServerHits.Load())
 }
 
 func (cfg *apiConfig) Reset(w http.ResponseWriter, r *http.Request) {
@@ -27,13 +25,8 @@ func (cfg *apiConfig) Reset(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *apiConfig) Health(w http.ResponseWriter, r *http.Request) {
-	body, err := json.Marshal("OK")
-	if err != nil {
-		w.WriteHeader(500)
-		return
-	}
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.Write(body)
+	fmt.Fprint(w, "OK")
 }
 
 func (cfg *apiConfig) RegisterSiteHit(next http.Handler) http.Handler {
