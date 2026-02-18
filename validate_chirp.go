@@ -4,10 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type chirp struct {
 	Body string `json:"body"`
+}
+
+func getProfanityMap() map[string]any {
+	return map[string]any{
+		"kerfuffle": "",
+		"sharbert":  "",
+		"fornax":    "",
+	}
+
 }
 
 func ValidateChirp(w http.ResponseWriter, r *http.Request) {
@@ -18,15 +28,25 @@ func ValidateChirp(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 500, "Something went wrong")
 		return
 	}
+	//validate length
 	if len(c.Body) > 140 {
 		respondWithError(w, 400, "Chirp is too long")
 		return
 	}
 
+	//filter profanity
+	profanity := getProfanityMap()
+	chirpSlice := strings.Split(c.Body, " ")
+	for i, word := range chirpSlice {
+		if _, ok := profanity[strings.ToLower(word)]; ok {
+			chirpSlice[i] = "****"
+		}
+	}
+
 	payload := struct {
-		Valid bool `json:"valid"`
+		CleanedBody string `json:"cleaned_body"`
 	}{
-		Valid: true,
+		CleanedBody: strings.Join(chirpSlice, " "),
 	}
 	respondWithJSON(w, 200, payload)
 }
