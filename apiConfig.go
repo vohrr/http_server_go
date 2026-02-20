@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"sync/atomic"
+
+	"github.com/vohrr/http_server_go/internal/database"
 )
 
 type apiConfig struct {
 	fileServerHits atomic.Int32
+	queries        *database.Queries
 }
 
 func (cfg *apiConfig) Metrics(w http.ResponseWriter, r *http.Request) {
