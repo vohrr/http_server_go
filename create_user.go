@@ -30,7 +30,7 @@ func (cfg *apiConfig) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//write user to responsewriter
-	respondWithJSON(w, 201, mapFromModel(user))
+	respondWithJSON(w, 201, mapUserModel(user))
 }
 
 type User struct {
@@ -40,7 +40,7 @@ type User struct {
 	Email     string    `json:"email"`
 }
 
-func mapFromModel(dbUser database.User) User {
+func mapUserModel(dbUser database.User) User {
 	return User{
 		ID:        dbUser.ID,
 		CreatedAt: dbUser.CreatedAt,

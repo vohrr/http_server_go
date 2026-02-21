@@ -24,11 +24,11 @@ func main() {
 	appHandler := http.StripPrefix(applicationPath, http.FileServer(http.Dir(".")))
 	//register request handlers
 	mux.Handle(applicationPath, cfg.RegisterSiteHit(appHandler))
-	mux.HandleFunc("POST /api/validate_chirp", ValidateChirp)
 	mux.HandleFunc("GET /admin/metrics", cfg.Metrics)
 	mux.HandleFunc("GET /api/healthz", cfg.Health)
 	mux.HandleFunc("POST /admin/reset", cfg.Reset)
 	mux.HandleFunc("POST /api/users", cfg.CreateUser)
+	mux.HandleFunc("POST /api/chirps", cfg.CreateChirp)
 
 	server := http.Server{
 		Handler: mux,
