@@ -11,6 +11,7 @@ import (
 type apiConfig struct {
 	fileServerHits atomic.Int32
 	queries        *database.Queries
+	platform       string
 }
 
 func (cfg *apiConfig) Metrics(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +25,15 @@ func (cfg *apiConfig) Metrics(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *apiConfig) Reset(w http.ResponseWriter, r *http.Request) {
-	cfg.fileServerHits.Store(0)
+	if cfg.platform != "dev" {
+		w.WriteHeader(403)
+	} else {
+		cfg.fileServerHits.Store(0)
+		err := cfg.queries.AdminReset(r.Context())
+		if err != nil {
+			fmt.Fprintf(w, "Something went wrong")
+		}
+	}
 }
 
 func (cfg *apiConfig) Health(w http.ResponseWriter, r *http.Request) {

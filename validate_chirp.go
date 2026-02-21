@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strings"
 )
@@ -49,15 +48,4 @@ func ValidateChirp(w http.ResponseWriter, r *http.Request) {
 		CleanedBody: strings.Join(chirpSlice, " "),
 	}
 	respondWithJSON(w, 200, payload)
-}
-
-func respondWithError(w http.ResponseWriter, statusCode int, message string) {
-	w.WriteHeader(statusCode)
-	fmt.Fprintf(w, message)
-}
-
-func respondWithJSON(w http.ResponseWriter, statusCode int, payload any) {
-	data, _ := json.Marshal(payload)
-	w.WriteHeader(statusCode)
-	w.Write(data)
 }

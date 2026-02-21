@@ -14,9 +14,7 @@ import (
 
 func main() {
 	//init db connection
-	var cfg apiConfig
-	var err error
-	cfg.queries, err = initDatabase()
+	cfg, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,6 +28,7 @@ func main() {
 	mux.HandleFunc("GET /admin/metrics", cfg.Metrics)
 	mux.HandleFunc("GET /api/healthz", cfg.Health)
 	mux.HandleFunc("POST /admin/reset", cfg.Reset)
+	mux.HandleFunc("POST /api/users", cfg.CreateUser)
 
 	server := http.Server{
 		Handler: mux,
@@ -39,8 +38,21 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
+func loadConfig() (*apiConfig, error) {
+	var cfg apiConfig
+	err := godotenv.Load()
+	if err != nil {
+		return &cfg, err
+	}
+	cfg.platform = os.Getenv("PLATFORM")
+	cfg.queries, err = initDatabase()
+	if err != nil {
+		return &cfg, err
+	}
+	return &cfg, nil
+}
+
 func initDatabase() (*database.Queries, error) {
-	godotenv.Load()
 	dbConnectionString := os.Getenv("DB_URL")
 	db, err := sql.Open("postgres", dbConnectionString)
 	if err != nil {
