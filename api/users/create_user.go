@@ -1,4 +1,4 @@
-package main
+package users
 
 import (
 	"encoding/json"
@@ -6,10 +6,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/vohrr/http_server_go/api"
 	"github.com/vohrr/http_server_go/internal/database"
 )
 
-func (cfg *apiConfig) CreateUser(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	//decode the request body
 	type createUserRequest struct {
 		Email string `json:"email"`
@@ -19,18 +20,18 @@ func (cfg *apiConfig) CreateUser(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&data)
 	if err != nil {
-		respondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 500, "Something went wrong")
 		return
 	}
 	var user database.User
 	//write the request to the db
-	user, err = cfg.queries.CreateUser(r.Context(), data.Email)
+	user, err = h.Cfg.Queries.CreateUser(r.Context(), data.Email)
 	if err != nil {
-		respondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 500, "Something went wrong")
 		return
 	}
 	//write user to responsewriter
-	respondWithJSON(w, 201, mapUserModel(user))
+	api.RespondWithJSON(w, 201, mapUserModel(user))
 }
 
 type User struct {

@@ -9,6 +9,10 @@ import (
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"github.com/vohrr/http_server_go/api"
+	"github.com/vohrr/http_server_go/api/admin"
+	"github.com/vohrr/http_server_go/api/chirps"
+	"github.com/vohrr/http_server_go/api/users"
 	"github.com/vohrr/http_server_go/internal/database"
 )
 
@@ -22,15 +26,20 @@ func main() {
 	mux := http.NewServeMux()
 	applicationPath := "/app/"
 	appHandler := http.StripPrefix(applicationPath, http.FileServer(http.Dir(".")))
-	//register request handlers
-	mux.Handle(applicationPath, cfg.RegisterSiteHit(appHandler))
-	mux.HandleFunc("GET /admin/metrics", cfg.Metrics)
-	mux.HandleFunc("GET /api/healthz", cfg.Health)
-	mux.HandleFunc("POST /admin/reset", cfg.Reset)
-	mux.HandleFunc("POST /api/users", cfg.CreateUser)
-	mux.HandleFunc("POST /api/chirps", cfg.CreateChirp)
-	mux.HandleFunc("GET /api/chirps", cfg.GetChirps)
-	mux.HandleFunc("GET /api/chirps/{chirpID}", cfg.GetChirp)
+	//register handlers
+	userHandler := users.UserHandler{Cfg: cfg}
+	adminHandler := admin.AdminHandler{Cfg: cfg}
+	chirpsHandler := chirps.ChirpHandler{Cfg: cfg}
+
+	//register endpoints
+	mux.Handle(applicationPath, adminHandler.RegisterSiteHit(appHandler))
+	mux.HandleFunc("GET /admin/metrics", adminHandler.Metrics)
+	mux.HandleFunc("GET /api/healthz", adminHandler.Health)
+	mux.HandleFunc("POST /admin/reset", adminHandler.Reset)
+	mux.HandleFunc("POST /api/users", userHandler.CreateUser)
+	mux.HandleFunc("POST /api/chirps", chirpsHandler.CreateChirp)
+	mux.HandleFunc("GET /api/chirps", chirpsHandler.GetChirps)
+	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpsHandler.GetChirp)
 
 	server := http.Server{
 		Handler: mux,
@@ -40,14 +49,14 @@ func main() {
 	log.Fatal(server.ListenAndServe())
 }
 
-func loadConfig() (*apiConfig, error) {
-	var cfg apiConfig
+func loadConfig() (*api.ApiConfig, error) {
+	var cfg api.ApiConfig
 	err := godotenv.Load()
 	if err != nil {
 		return &cfg, err
 	}
-	cfg.platform = os.Getenv("PLATFORM")
-	cfg.queries, err = initDatabase()
+	cfg.Platform = os.Getenv("PLATFORM")
+	cfg.Queries, err = initDatabase()
 	if err != nil {
 		return &cfg, err
 	}

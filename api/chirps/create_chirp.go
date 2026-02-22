@@ -1,4 +1,4 @@
-package main
+package chirps
 
 import (
 	"encoding/json"
@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/vohrr/http_server_go/api"
 	"github.com/vohrr/http_server_go/internal/database"
 )
 
@@ -16,17 +17,17 @@ type createChirpRequest struct {
 	UserId uuid.UUID `json:"user_id"`
 }
 
-func (cfg *apiConfig) CreateChirp(w http.ResponseWriter, r *http.Request) {
+func (h *ChirpHandler) CreateChirp(w http.ResponseWriter, r *http.Request) {
 	var c createChirpRequest
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&c)
 	if err != nil {
-		respondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 500, "Something went wrong")
 		return
 	}
 
 	if status, err := validateChirp(&c); err != nil {
-		respondWithError(w, status, err.Error())
+		api.RespondWithError(w, status, err.Error())
 		return
 	}
 
@@ -34,13 +35,13 @@ func (cfg *apiConfig) CreateChirp(w http.ResponseWriter, r *http.Request) {
 		Body:   c.Body,
 		UserID: c.UserId,
 	}
-	chirp, err := cfg.queries.CreateChirp(r.Context(), params)
+	chirp, err := h.Cfg.Queries.CreateChirp(r.Context(), params)
 	if err != nil {
-		respondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 500, "Something went wrong")
 		return
 	}
 
-	respondWithJSON(w, 201, mapChirpModel(chirp))
+	api.RespondWithJSON(w, 201, mapChirpModel(chirp))
 }
 
 func validateChirp(c *createChirpRequest) (int, error) {

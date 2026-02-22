@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -6,11 +6,11 @@ import (
 	"net/http"
 )
 
-func respondWithError(w http.ResponseWriter, statusCode int, message string) {
+func RespondWithError(w http.ResponseWriter, statusCode int, message string) {
 	w.WriteHeader(statusCode)
 	fmt.Fprintf(w, message)
 }
-func respondWithJSON(w http.ResponseWriter, statusCode int, payload any) {
+func RespondWithJSON(w http.ResponseWriter, statusCode int, payload any) {
 	data, _ := json.Marshal(payload)
 	w.WriteHeader(statusCode)
 	w.Write(data)

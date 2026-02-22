@@ -1,27 +1,29 @@
-package main
+package chirps
 
 import (
 	"database/sql"
-	"github.com/google/uuid"
 	"net/http"
+
+	"github.com/google/uuid"
+	"github.com/vohrr/http_server_go/api"
 )
 
-func (cfg *apiConfig) GetChirp(w http.ResponseWriter, r *http.Request) {
+func (h *ChirpHandler) GetChirp(w http.ResponseWriter, r *http.Request) {
 
 	chirpID, err := uuid.Parse(r.PathValue("chirpID"))
 	if err != nil {
-		respondWithError(w, 401, "Bad Request")
+		api.RespondWithError(w, 401, "Bad Request")
 		return
 	}
 
-	chirp, err := cfg.queries.GetChirp(r.Context(), chirpID)
+	chirp, err := h.Cfg.Queries.GetChirp(r.Context(), chirpID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			respondWithError(w, 404, "Not Found")
+			api.RespondWithError(w, 404, "Not Found")
 		} else {
-			respondWithError(w, 500, "Something went wrong")
+			api.RespondWithError(w, 500, "Something went wrong")
 		}
 		return
 	}
-	respondWithJSON(w, 200, mapChirpModel(chirp))
+	api.RespondWithJSON(w, 200, mapChirpModel(chirp))
 }

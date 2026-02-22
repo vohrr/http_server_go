@@ -1,19 +1,21 @@
-package main
+package chirps
 
 import (
 	"net/http"
+
+	"github.com/vohrr/http_server_go/api"
 )
 
-func (cfg *apiConfig) GetChirps(w http.ResponseWriter, r *http.Request) {
+func (h *ChirpHandler) GetChirps(w http.ResponseWriter, r *http.Request) {
 
-	chirps, err := cfg.queries.GetChirps(r.Context())
+	chirps, err := h.Cfg.Queries.GetChirps(r.Context())
 	if err != nil {
-		respondWithError(w, 500, "Could not fetch chirp data.")
+		api.RespondWithError(w, 500, "Could not fetch chirp data.")
 		return
 	}
 	var chirpsResponse []Chirp
 	for _, chirp := range chirps {
 		chirpsResponse = append(chirpsResponse, mapChirpModel(chirp))
 	}
-	respondWithJSON(w, 200, chirpsResponse)
+	api.RespondWithJSON(w, 200, chirpsResponse)
 }
