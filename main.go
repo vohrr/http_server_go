@@ -37,7 +37,7 @@ func main() {
 	mux.HandleFunc("GET /api/healthz", adminHandler.Health)
 	mux.HandleFunc("POST /admin/reset", adminHandler.Reset)
 	mux.HandleFunc("POST /api/users", userHandler.CreateUser)
-	mux.HandleFunc("POST /api/chirps", chirpsHandler.CreateChirp)
+	mux.HandleFunc("POST /api/chirps", api.Authenticate(chirpsHandler.CreateChirp, cfg))
 	mux.HandleFunc("GET /api/chirps", chirpsHandler.GetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpsHandler.GetChirp)
 	mux.HandleFunc("POST /api/login", loginHandler.Login)
@@ -58,6 +58,7 @@ func loadConfig() (*api.ApiConfig, error) {
 	}
 	cfg.Platform = os.Getenv("PLATFORM")
 	cfg.Queries, err = initDatabase()
+	cfg.Secret = os.Getenv("SECRET")
 	if err != nil {
 		return &cfg, err
 	}

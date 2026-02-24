@@ -13,8 +13,7 @@ import (
 )
 
 type createChirpRequest struct {
-	Body   string    `json:"body"`
-	UserId uuid.UUID `json:"user_id"`
+	Body string `json:"body"`
 }
 
 func (h *ChirpHandler) CreateChirp(w http.ResponseWriter, r *http.Request) {
@@ -22,7 +21,7 @@ func (h *ChirpHandler) CreateChirp(w http.ResponseWriter, r *http.Request) {
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&c)
 	if err != nil {
-		api.RespondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 400, "Bad Request")
 		return
 	}
 
@@ -31,13 +30,20 @@ func (h *ChirpHandler) CreateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userId, ok := r.Context().Value("userID").(string)
+	if !ok {
+		api.RespondWithError(w, 500, "Something went wrong")
+		return
+	}
+	userID, _ := uuid.Parse(userId)
 	params := database.CreateChirpParams{
 		Body:   c.Body,
-		UserID: c.UserId,
+		UserID: userID,
 	}
+
 	chirp, err := h.Cfg.Queries.CreateChirp(r.Context(), params)
 	if err != nil {
-		api.RespondWithError(w, 500, "Something went wrong")
+		api.RespondWithError(w, 500, "Something went wrong - could not create chirp")
 		return
 	}
 

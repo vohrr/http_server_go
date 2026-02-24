@@ -4,14 +4,21 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"github.com/vohrr/http_server_go/api/models"
 	"github.com/vohrr/http_server_go/internal/auth"
 )
 
 type loginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	ExpiresIn int    `json:"expires_in_seconds"`
+}
+
+type loginResponse struct {
+	Token string `json:"token"`
+	models.User
 }
 
 type LoginHandler struct {
@@ -41,6 +48,22 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		RespondWithError(w, 401, "Incorrect email or password")
 		return
 	}
+	var expiresIn time.Duration
+	if credentials.ExpiresIn != 0 {
+		expiresIn = time.Duration(credentials.ExpiresIn) * time.Second
+	} else {
+		expiresIn = time.Hour * 1
+	}
 
-	RespondWithJSON(w, 200, models.MapUserModel(user))
+	jwt, err := auth.MakeJWT(user.ID, h.Cfg.Secret, expiresIn)
+	if err != nil {
+		RespondWithError(w, 500, "Something went wrong")
+	}
+
+	response := loginResponse{
+		User:  models.MapUserModel(user),
+		Token: jwt,
+	}
+
+	RespondWithJSON(w, 200, response)
 }
