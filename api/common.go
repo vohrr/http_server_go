@@ -8,7 +8,7 @@ import (
 
 func RespondWithError(w http.ResponseWriter, statusCode int, message string) {
 	w.WriteHeader(statusCode)
-	fmt.Fprintf(w, message)
+	fmt.Fprintf(w, "%s", message)
 }
 func RespondWithJSON(w http.ResponseWriter, statusCode int, payload any) {
 	data, _ := json.Marshal(payload)

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/vohrr/http_server_go/api"
+	"github.com/vohrr/http_server_go/api/models"
 	"github.com/vohrr/http_server_go/internal/database"
 )
 
@@ -41,7 +41,7 @@ func (h *ChirpHandler) CreateChirp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.RespondWithJSON(w, 201, mapChirpModel(chirp))
+	api.RespondWithJSON(w, 201, models.MapChirpModel(chirp))
 }
 
 func validateChirp(c *createChirpRequest) (int, error) {
@@ -69,22 +69,4 @@ func getProfanityMap() map[string]any {
 		"fornax":    "",
 	}
 
-}
-
-type Chirp struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Body      string    `json:"body"`
-	UserId    uuid.UUID `json:"user_id"`
-}
-
-func mapChirpModel(db database.Chirp) Chirp {
-	return Chirp{
-		ID:        db.ID,
-		CreatedAt: db.CreatedAt,
-		UpdatedAt: db.UpdatedAt,
-		Body:      db.Body,
-		UserId:    db.UserID,
-	}
 }

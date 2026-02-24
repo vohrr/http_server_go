@@ -30,7 +30,7 @@ func main() {
 	userHandler := users.UserHandler{Cfg: cfg}
 	adminHandler := admin.AdminHandler{Cfg: cfg}
 	chirpsHandler := chirps.ChirpHandler{Cfg: cfg}
-
+	loginHandler := api.LoginHandler{Cfg: cfg}
 	//register endpoints
 	mux.Handle(applicationPath, adminHandler.RegisterSiteHit(appHandler))
 	mux.HandleFunc("GET /admin/metrics", adminHandler.Metrics)
@@ -40,6 +40,7 @@ func main() {
 	mux.HandleFunc("POST /api/chirps", chirpsHandler.CreateChirp)
 	mux.HandleFunc("GET /api/chirps", chirpsHandler.GetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpsHandler.GetChirp)
+	mux.HandleFunc("POST /api/login", loginHandler.Login)
 
 	server := http.Server{
 		Handler: mux,

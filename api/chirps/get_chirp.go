@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/vohrr/http_server_go/api"
+	"github.com/vohrr/http_server_go/api/models"
 )
 
 func (h *ChirpHandler) GetChirp(w http.ResponseWriter, r *http.Request) {
@@ -25,5 +26,5 @@ func (h *ChirpHandler) GetChirp(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	api.RespondWithJSON(w, 200, mapChirpModel(chirp))
+	api.RespondWithJSON(w, 200, models.MapChirpModel(chirp))
 }
