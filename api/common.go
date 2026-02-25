@@ -25,16 +25,16 @@ func Authenticate(next http.HandlerFunc, cfg *ApiConfig) http.HandlerFunc {
 
 		bearer, err := auth.GetBearerToken(r.Header)
 		if err != nil {
-			RespondWithError(w, 401, fmt.Sprintf("Not Authorized: %s", err))
+			RespondWithError(w, 401, err.Error())
 		}
 		userID, err := auth.ValidateJWT(bearer, cfg.Secret)
 		if err != nil {
-			RespondWithError(w, 401, fmt.Sprintf("Not Authorized: %s", err))
+			RespondWithError(w, 401, err.Error())
 		}
-		if _, err := cfg.Queries.GetUserById(r.Context(), userID); err != nil {
-			RespondWithError(w, 401, "Not Authorized")
-			return
-		}
+		// if _, err := cfg.Queries.GetUserById(r.Context(), userID); err != nil {
+		// 	RespondWithError(w, 401, "Not Authorized")
+		// 	return
+		// }
 		ctx := context.WithValue(r.Context(), "userID", userID.String())
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
