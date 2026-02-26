@@ -8,16 +8,17 @@ import (
 
 	"github.com/vohrr/http_server_go/api/models"
 	"github.com/vohrr/http_server_go/internal/auth"
+	"github.com/vohrr/http_server_go/internal/database"
 )
 
 type loginRequest struct {
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	ExpiresIn int    `json:"expires_in_seconds"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type loginResponse struct {
-	Token string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
+	Token        string `json:"token"`
 	models.User
 }
 
@@ -48,21 +49,32 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		RespondWithError(w, 401, "Incorrect email or password")
 		return
 	}
-	var expiresIn time.Duration
-	if credentials.ExpiresIn != 0 {
-		expiresIn = time.Duration(credentials.ExpiresIn) * time.Second
-	} else {
-		expiresIn = time.Hour * 1
-	}
 
+	expiresIn := time.Hour * 1
 	jwt, err := auth.MakeJWT(user.ID, h.Cfg.Secret, expiresIn)
 	if err != nil {
 		RespondWithError(w, 500, "Something went wrong")
+		return
 	}
-
+	refresh_token := auth.MakeRefreshToken()
+	if err != nil {
+		RespondWithError(w, 500, "Something went wrong")
+		return
+	}
+	params := database.CreateRefreshTokenParams{
+		Token:     refresh_token,
+		UserID:    user.ID,
+		ExpiresAt: time.Now().UTC().AddDate(0, 0, 60),
+	}
+	refresh, err := h.Cfg.Queries.CreateRefreshToken(r.Context(), params)
+	if err != nil {
+		RespondWithError(w, 500, "Error creating refresh token")
+		return
+	}
 	response := loginResponse{
-		User:  models.MapUserModel(user),
-		Token: jwt,
+		User:         models.MapUserModel(user),
+		Token:        jwt,
+		RefreshToken: refresh.Token,
 	}
 
 	RespondWithJSON(w, 200, response)

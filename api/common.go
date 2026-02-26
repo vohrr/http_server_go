@@ -26,10 +26,12 @@ func Authenticate(next http.HandlerFunc, cfg *ApiConfig) http.HandlerFunc {
 		bearer, err := auth.GetBearerToken(r.Header)
 		if err != nil {
 			RespondWithError(w, 401, err.Error())
+			return
 		}
 		userID, err := auth.ValidateJWT(bearer, cfg.Secret)
 		if err != nil {
 			RespondWithError(w, 401, err.Error())
+			return
 		}
 		// if _, err := cfg.Queries.GetUserById(r.Context(), userID); err != nil {
 		// 	RespondWithError(w, 401, "Not Authorized")
