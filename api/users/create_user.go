@@ -13,7 +13,7 @@ import (
 
 func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	//decode the request body
-	var data createUserRequest
+	var data UserRequest
 
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&data)
@@ -40,11 +40,11 @@ func (h *UserHandler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	api.RespondWithJSON(w, 201, models.MapUserModel(user))
 }
 
-type createUserRequest struct {
+type UserRequest struct {
 	Password string `json:"password"`
 	Email    string `json:"email"`
 }
 
-func (r createUserRequest) isValid() bool {
+func (r UserRequest) isValid() bool {
 	return (len(r.Email) > 0 && len(r.Password) > 0)
 }

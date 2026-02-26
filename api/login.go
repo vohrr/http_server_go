@@ -57,10 +57,7 @@ func (h *LoginHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	refresh_token := auth.MakeRefreshToken()
-	if err != nil {
-		RespondWithError(w, 500, "Something went wrong")
-		return
-	}
+
 	params := database.CreateRefreshTokenParams{
 		Token:     refresh_token,
 		UserID:    user.ID,
