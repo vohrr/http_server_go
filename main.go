@@ -12,6 +12,7 @@ import (
 	"github.com/vohrr/http_server_go/api"
 	"github.com/vohrr/http_server_go/api/admin"
 	"github.com/vohrr/http_server_go/api/chirps"
+	"github.com/vohrr/http_server_go/api/polka"
 	"github.com/vohrr/http_server_go/api/users"
 	"github.com/vohrr/http_server_go/internal/database"
 )
@@ -31,20 +32,24 @@ func main() {
 	adminHandler := admin.AdminHandler{Cfg: cfg}
 	chirpsHandler := chirps.ChirpHandler{Cfg: cfg}
 	loginHandler := api.LoginHandler{Cfg: cfg}
+	webHooksHandler := polka.WebhookHandler{Cfg: cfg}
 	//register endpoints
 	mux.Handle(applicationPath, adminHandler.RegisterSiteHit(appHandler))
 	mux.HandleFunc("GET /admin/metrics", adminHandler.Metrics)
 	mux.HandleFunc("GET /api/healthz", adminHandler.Health)
 	mux.HandleFunc("POST /admin/reset", adminHandler.Reset)
 	mux.HandleFunc("POST /api/users", userHandler.CreateUser)
-	mux.HandleFunc("PUT /api/users", api.Authenticate(userHandler.UpdateUser, cfg))
-	mux.HandleFunc("POST /api/chirps", api.Authenticate(chirpsHandler.CreateChirp, cfg))
 	mux.HandleFunc("GET /api/chirps", chirpsHandler.GetChirps)
 	mux.HandleFunc("GET /api/chirps/{chirpID}", chirpsHandler.GetChirp)
-	mux.HandleFunc("DELETE /api/chirps/{chirpID}", api.Authenticate(chirpsHandler.DeleteChirp, cfg))
 	mux.HandleFunc("POST /api/login", loginHandler.Login)
 	mux.HandleFunc("POST /api/refresh", loginHandler.Refresh)
 	mux.HandleFunc("POST /api/revoke", loginHandler.Revoke)
+	//auth endpoints
+	mux.HandleFunc("DELETE /api/chirps/{chirpID}", api.Authenticate(chirpsHandler.DeleteChirp, cfg))
+	mux.HandleFunc("PUT /api/users", api.Authenticate(userHandler.UpdateUser, cfg))
+	mux.HandleFunc("POST /api/chirps", api.Authenticate(chirpsHandler.CreateChirp, cfg))
+	//webhooks
+	mux.HandleFunc("POST /api/polka/webhooks", webHooksHandler.HandleEvent)
 
 	server := http.Server{
 		Handler: mux,
