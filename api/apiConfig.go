@@ -11,4 +11,5 @@ type ApiConfig struct {
 	Queries        *database.Queries
 	Platform       string
 	Secret         string
+	PolkaAPIKey    string
 }

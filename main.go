@@ -68,6 +68,7 @@ func loadConfig() (*api.ApiConfig, error) {
 	cfg.Platform = os.Getenv("PLATFORM")
 	cfg.Queries, err = initDatabase()
 	cfg.Secret = os.Getenv("SECRET")
+	cfg.PolkaAPIKey = os.Getenv("POLKA")
 	if err != nil {
 		return &cfg, err
 	}

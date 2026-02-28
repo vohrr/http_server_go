@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/vohrr/http_server_go/api"
+	"github.com/vohrr/http_server_go/internal/auth"
 	"github.com/vohrr/http_server_go/internal/database"
 )
 
@@ -19,10 +20,17 @@ type WebhookEventRequest struct {
 }
 
 func (h *WebhookHandler) HandleEvent(w http.ResponseWriter, r *http.Request) {
-	var req WebhookEventRequest
-	decoder := json.NewDecoder(r.Body)
 
-	err := decoder.Decode(&req)
+	apiKey, err := auth.GetAPIKey(r.Header)
+	if err != nil || apiKey != h.Cfg.PolkaAPIKey {
+		api.RespondWithError(w, 401, "Not Authorized")
+		return
+	}
+
+	var req WebhookEventRequest
+
+	decoder := json.NewDecoder(r.Body)
+	err = decoder.Decode(&req)
 
 	if err != nil {
 		api.RespondWithError(w, 400, "Bad Request")
